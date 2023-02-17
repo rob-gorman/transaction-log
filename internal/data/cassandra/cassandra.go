@@ -18,26 +18,26 @@ const deadline = 5 // timeout before cancelling query
 // Cassandra struct implements DBAccessor and auth.Authenticator
 type Cassandra struct {
 	*gocql.Session
-	l *utils.AuditLogLogger
+	log *utils.AuditLogLogger
 }
 
 func New(ctx context.Context, l *utils.AuditLogLogger) Cassandra {
 	session := mustConnectCassandra(ctx, l)
 	return Cassandra{
 		Session: session,
-		l:       l,
+		log:       l,
 	}
 }
 
 func (c Cassandra) Register() ([]byte, error) {
 	apikey, err := auth.NewAPIKey()
 	if err != nil {
-		c.l.Err("failed to generate API key: %v", err)
+		c.log.Err("failed to generate API key: %v", err)
 		return nil, err
 	}
 
 	if err = c.insertApiKey(apikey); err != nil {
-		c.l.Err("unable to insert API key to DB: %v", err)
+		c.log.Err("unable to insert API key to DB: %v", err)
 		return nil, err
 	}
 
@@ -56,13 +56,13 @@ func (c Cassandra) InsertEvent(data []byte) error {
 	al := &AuditLog{}
 	err := al.CustomUnmarshal(data)
 	if err != nil {
-		c.l.Err(err.Error())
+		c.log.Err(err.Error())
 		return err
 	}
 
 	err = c.insert(ctx, al)
 	if err != nil {
-		c.l.Err("problem inserting data: %v", err)
+		c.log.Err("problem inserting data: %v", err)
 	}
 
 	return err
@@ -77,7 +77,7 @@ func (c Cassandra) SelectRowsByField(field, value string) ([]byte, error) {
 
 	results, err := c.selectByField(ctx, field, value)
 	if err != nil {
-		c.l.Err("%v", err)
+		c.log.Err("%v", err)
 		return nil, err
 	}
 
@@ -98,44 +98,6 @@ func (c Cassandra) SelectRowsByField(field, value string) ([]byte, error) {
 
 	return utils.ToJSON(response)
 }
-
-// func (c Cassandra) SelectAccount(acct int, since time.Time) ([]byte, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), deadline*time.Second)
-// 	defer cancel()
-
-// 	results, err := c.selectByAcct(ctx, acct, since)
-// 	if err != nil {
-// 		c.l.Err("%v", err)
-// 		return nil, err
-// 	}
-
-// 	// compose AuditLog array of results to flat map
-// 	var response []map[string]interface{}
-// 	for _, log := range results {
-// 		jsMap, err := log.ToFlatMap()
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		response = append(response, jsMap)
-// 	}
-
-// 	return utils.ToJSON(&response)
-// }
-
-// func (c Cassandra) SelectAccountEvent(acct int, event string, since time.Time) ([]byte, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), deadline*time.Second)
-// 	defer cancel()
-
-// 	results, err := c.selectAcctEvent(ctx, acct, event, since)
-// 	if err != nil {
-// 		c.l.Err("%v", err)
-// 		return nil, err
-// 	}
-
-// 	fmt.Printf("in db API: %#v", results)
-
-// 	return utils.ToJSON(&results)
-// }
 
 // initializes connection to Cassandra instance with config values
 // panics if can't resolve

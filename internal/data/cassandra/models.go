@@ -27,7 +27,7 @@ type Time struct {
 
 // for some reason, couldn't get time.Parse(time.UnixDate, string(b))
 // to work, even with strings.Trim to trim double quotes off the string.
-// hence, stuck with non-human readable Unix format
+// hence, stuck with non-human readable Unix format for now
 func (t *Time) UnmarshalJSON(b []byte) error {
 	var val int64
 	if err := json.Unmarshal(b, &val); err != nil {

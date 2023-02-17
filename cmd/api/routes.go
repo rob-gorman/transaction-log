@@ -15,8 +15,8 @@ func (a *App) registerRoutes() *httprouter.Router {
 	router.HandlerFunc(http.MethodPost, "/v0/register", a.register)
 
 	router.HandlerFunc(http.MethodPost, "/v0/logs", a.authenticate(a.createEvent))
-	
+
 	router.HandlerFunc(http.MethodGet, "/v0/logs/:field/:value", a.authenticate(a.getLogsByField))
-	
+
 	return router
 }

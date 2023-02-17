@@ -14,7 +14,7 @@ func (a *App) logError(r *http.Request, err error) {
 		r.Method,
 		r.URL.String(),
 	)
-	a.L.Err(msg)
+	a.Log.Err(msg)
 }
 
 func payloadResponse(w http.ResponseWriter, status int, data *[]byte, headers http.Header) error {

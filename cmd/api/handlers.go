@@ -27,7 +27,7 @@ func (a *App) createEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	a.L.Info("object recieved: %s", string(req))
+	a.Log.Info("object recieved: %s", string(req))
 
 	err = a.DB.InsertEvent(utils.PrepareRequest(req))
 	if err != nil {
@@ -40,7 +40,7 @@ func (a *App) getLogsByField(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		a.badRequestResponse(w, r, err)
 	}
-	
+
 	value, err := utils.ReadValueParam(r)
 	if err != nil {
 		a.badRequestResponse(w, r, err)

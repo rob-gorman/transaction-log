@@ -17,21 +17,21 @@ import (
 )
 
 type App struct {
-	L    *utils.AuditLogLogger
-	R    *httprouter.Router
-	DB   data.DBAccessor
-	Auth auth.Authenticator
+	Log    *utils.AuditLogLogger
+	Router *httprouter.Router
+	DB     data.DBAccessor
+	Auth   auth.Authenticator
 }
 
 // factory function for new App instance
 func New(l *utils.AuditLogLogger, db data.DBAccessor, auth auth.Authenticator) App {
 	app := App{
-		L:    l,
+		Log:  l,
 		DB:   db,
 		Auth: auth,
 	}
 	r := app.registerRoutes()
-	app.R = r
+	app.Router = r
 
 	return app
 }
@@ -44,7 +44,7 @@ func (a *App) Run(ctx context.Context) {
 	// omitted for convenience
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", config.AppPort),
-		Handler:      a.R,
+		Handler:      a.Router,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -53,7 +53,7 @@ func (a *App) Run(ctx context.Context) {
 	go func() {
 		err := srv.ListenAndServe()
 		if err != nil {
-			a.L.Err(fmt.Sprintf("%v", err))
+			a.Log.Err(fmt.Sprintf("%v", err))
 		}
 	}()
 
@@ -62,7 +62,7 @@ func (a *App) Run(ctx context.Context) {
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
 
 	sig := <-sigChan // blocks
-	a.L.Info(fmt.Sprintf("Shutting down server %v", sig))
+	a.Log.Info(fmt.Sprintf("Shutting down server %v", sig))
 
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
