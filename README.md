@@ -1,6 +1,6 @@
 # Transaction Logging Service
 
-HTTP service connecting to a Cassandra database for both inserting and retrieving audit logs
+HTTP service serving a public API managing a Cassandra database for both inserting and retrieving audit logs
 
 Service and DB can be deployed to run locally on port `3000` with `docker compose up --build`
 
